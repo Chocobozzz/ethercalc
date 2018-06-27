@@ -348,6 +348,19 @@
                 window.onbeforeunload = null;
                 window.location = '/';
                 break;
+              case 'fatalError':
+                if (typeof vex != 'undefined' && vex !== null) {
+                  vex.closeAll();
+                }
+                if (typeof vex != 'undefined' && vex !== null) {
+                  vex.defaultOptions.className = 'vex-theme-flat-attack';
+                }
+                if (typeof vex != 'undefined' && vex !== null) {
+                  vex.dialog.open({
+                    message: this.data.message
+                  });
+                }
+                throw new Error(this.data.message);
               case 'error':
                 if (typeof vex != 'undefined' && vex !== null) {
                   vex.closeAll();

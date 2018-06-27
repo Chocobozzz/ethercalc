@@ -810,16 +810,28 @@
           this.socket.join("log-" + room);
           this.socket.join("user-" + user);
           DB.multi().get("snapshot-" + room).lrange("log-" + room, 0, -1).lrange("chat-" + room, 0, -1).exec(function(_, arg$){
-            var snapshot, log, chat;
+            var snapshot, log, chat, e;
             snapshot = arg$[0], log = arg$[1], chat = arg$[2];
-            SC[room] = SC._init(snapshot, log, DB, room, this$.io);
-            return reply({
-              type: 'log',
-              room: room,
-              log: log,
-              chat: chat,
-              snapshot: snapshot
-            });
+            try {
+              SC[room] = SC._init(snapshot, log, DB, room, this$.io);
+              return reply({
+                type: 'log',
+                room: room,
+                log: log,
+                chat: chat,
+                snapshot: snapshot
+              });
+            } catch (e$) {
+              e = e$;
+              console.log("Calc [log-" + room + "] is broken");
+              reply({
+                type: 'ignore'
+              });
+              return reply({
+                type: 'fatalError',
+                message: 'Calc is broken'
+              });
+            }
           });
           break;
         case 'ask.recalc':

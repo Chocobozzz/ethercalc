@@ -33,10 +33,10 @@
   const RealBin = require \path .dirname do
     fs.realpathSync __filename
   const DevMode = fs.existsSync "#RealBin/.git"
-  #Time Triggered Email - contains next send time 
-  dataDir = process.env.OPENSHIFT_DATA_DIR   
-  #dataDir = ".."  
-  
+  #Time Triggered Email - contains next send time
+  dataDir = process.env.OPENSHIFT_DATA_DIR
+  #dataDir = ".."
+
   sendFile = (file) -> ->
     @response.type Html
     @response.sendfile "#RealBin/#file"
@@ -179,38 +179,38 @@
     rv = J.utils["to_#type"](input)
     [J-TypeMap[type], rv, type]
   )
-      
+
   # Send time triggered email. Send due emails and schedule time of next send. Called from bash file:timetrigger in cron
-  @get "#BASEPATH/_timetrigger": -> 
+  @get "#BASEPATH/_timetrigger": ->
       (, allTimeTriggers) <~ DB.hgetall "cron-list"
       console.log "allTimeTriggers "  {...allTimeTriggers}
       timeNowMins = Math.floor(new Date().getTime() / (1000 * 60))
-      nextTriggerTime = 2147483647   # set to max seconds possible (31^2)      
+      nextTriggerTime = 2147483647   # set to max seconds possible (31^2)
       for cellID, timeList of allTimeTriggers
         timeList = for triggerTimeMins in timeList.split(',')
           if triggerTimeMins <= timeNowMins
-            [room, cell] = cellID.split('!')        
-            console.log "cellID #cellID triggerTimeMins #triggerTimeMins" 
+            [room, cell] = cellID.split('!')
+            console.log "cellID #cellID triggerTimeMins #triggerTimeMins"
             do
               {snapshot} <~ SC._get room, IO
-              SC[room].triggerActionCell cell, ->                
+              SC[room].triggerActionCell cell, ->
             continue
           else
-            if nextTriggerTime > triggerTimeMins 
+            if nextTriggerTime > triggerTimeMins
               nextTriggerTime = triggerTimeMins
             triggerTimeMins
         #console.log "timeList #timeList"
-        if timeList.length == 0 
+        if timeList.length == 0
           DB.hdel "cron-list", cellID
         else
-          DB.hset "cron-list", cellID, timeList.toString()      
+          DB.hset "cron-list", cellID, timeList.toString()
       <~ DB.multi!
         .set "cron-nextTriggerTime" nextTriggerTime
         .bgsave!exec!
       fs.writeFileSync do
         "#dataDir/nextTriggerTime.txt"
         nextTriggerTime
-        \utf8                       
+        \utf8
       console.log "--- cron email sent ---"
       @response.type Json
       @response.send 200 allTimeTriggers
@@ -229,8 +229,13 @@
         @response.type Text
         return @response.send 403 '_rooms not available with CORS'
   else
+<<<<<<< HEAD
      @get "#BASEPATH/_rooms" : ->
-        rooms <~ SC._rooms 
+        rooms <~ SC._rooms
+=======
+     @get '/_rooms' : ->
+        rooms <~ SC._rooms
+>>>>>>> Handle broken calcs
         @response.type \application/json
         @response.json 200 rooms
   if @CORS
@@ -238,8 +243,13 @@
         @response.type Text
         return @response.send 403 '_roomlinks not available with CORS'
   else
+<<<<<<< HEAD
      @get "#BASEPATH/_roomlinks" : ->
-        rooms <~ SC._rooms 
+        rooms <~ SC._rooms
+=======
+     @get '/_roomlinks' : ->
+        rooms <~ SC._rooms
+>>>>>>> Handle broken calcs
         roomlinks = for room in rooms
           "<a href=#BASEPATH/#room>#room</a>"
         @response.type Html
@@ -280,16 +290,27 @@
         sendFile(ui-file).call @
       else @response.redirect "#BASEPATH/#{ @params.room }?auth=0"
     else sendFile(ui-file).call @
-    
-  # Form/App - auto duplicate sheet for new user to input data 
+<<<<<<< HEAD
+
+  # Form/App - auto duplicate sheet for new user to input data
   @get "#BASEPATH/:template/form": ->
+=======
+
+  # Form/App - auto duplicate sheet for new user to input data
+  @get '/:template/form': ->
+>>>>>>> Handle broken calcs
     template = @params.template
     room = template + \_ + new-room!
     delete SC[room]
     {snapshot} <~ SC._get template, IO
     <~ SC._put room, snapshot
-    @response.redirect "#BASEPATH/#room/app" 
-  @get "#BASEPATH/:template/appeditor": sendFile \panels.html    
+<<<<<<< HEAD
+    @response.redirect "#BASEPATH/#room/app"
+  @get "#BASEPATH/:template/appeditor": sendFile \panels.html
+=======
+    @response.redirect "#BASEPATH/#room/app"
+  @get '/:template/appeditor': sendFile \panels.html
+>>>>>>> Handle broken calcs
 
   @get "#BASEPATH/:room/edit": ->
     room = @params.room
@@ -354,9 +375,14 @@
       return cb save
 
   for route in <[
-    /=:room.xlsx /_/=:room/xlsx 
-    /=:room.ods /_/=:room/ods 
+<<<<<<< HEAD
+    /=:room.xlsx /_/=:room/xlsx
+    /=:room.ods /_/=:room/ods
     /=:room.fods /_/=:room/fods
+=======
+    /=:room.xlsx /_/=:room/xlsx
+    /=:room.ods /_/=:room/ods
+>>>>>>> Handle broken calcs
   ]> => @put "#route": ->
     room = encodeURIComponent(@params.room).replace(/%3A/g \:)
     cs = []; @request.on \data (chunk) ~> cs ++= chunk
@@ -475,7 +501,7 @@
   @on data: !->
     {room, msg, user, ecell, cmdstr, type, auth} = @data
     # eddy
-    #console.log "on data: " {...@data} 
+    #console.log "on data: " {...@data}
     room = "#room" - /^_+/ # preceding underscore is reserved
     DB.expire "snapshot-#room", EXPIRE if EXPIRE
     reply = (data) ~> @emit {data}
@@ -500,7 +526,7 @@
         .rpush "log-#room" cmdstr
         .rpush "audit-#room" cmdstr
         .bgsave!.exec!
-      commandParameters = cmdstr.split("\r")       
+      commandParameters = cmdstr.split("\r")
       unless SC[room]?
         console.log "SC[#room] went away. Reloading..."
         _, [snapshot, log] <~ DB.multi!get("snapshot-#room").lrange("log-#room", 0, -1).exec
@@ -510,37 +536,37 @@
         room_data = if room.indexOf('_') == -1  # store data in <templatesheet>_formdata
           then room + "_formdata"
           else room.replace(/_[.=_a-zA-Z0-9]*$/i,"_formdata") # get formdata sheet of cloned template
-        console.log "test SC[#{room_data}] submitform..."      
+        console.log "test SC[#{room_data}] submitform..."
         unless SC["#{room_data}"]?
           console.log "Submitform. loading... SC[#{room_data}]"
           _, [snapshot, log] <~ DB.multi!get("snapshot-#{room_data}").lrange("log-#{room_data}", 0, -1).exec
-          SC["#{room_data}"] = SC._init snapshot, log, DB, "#{room_data}", @io   
+          SC["#{room_data}"] = SC._init snapshot, log, DB, "#{room_data}", @io
         # add form values to last row of formdata sheet
         attribs <-! SC["#{room_data}"]?exportAttribs
-        console.log "sheet attribs:" { ...attribs }       
+        console.log "sheet attribs:" { ...attribs }
         formrow = for let datavalue, formDataIndex in commandParameters when formDataIndex != 0
-          "set #{String.fromCharCode(64 + formDataIndex)+(attribs.lastrow+1)} text t #datavalue" 
-          #SocialCalc.crToCoord(formDataIndex, attribs.lastrow+1)}                   
-        #cmdstrformdata = "set A3 text t abc"   
+          "set #{String.fromCharCode(64 + formDataIndex)+(attribs.lastrow+1)} text t #datavalue"
+          #SocialCalc.crToCoord(formDataIndex, attribs.lastrow+1)}
+        #cmdstrformdata = "set A3 text t abc"
         cmdstrformdata = formrow.join("\n")
-        console.log "cmdstrformdata:"+cmdstrformdata        
+        console.log "cmdstrformdata:"+cmdstrformdata
         <~ DB.multi!
           .rpush "log-#{room_data}" cmdstrformdata
           .rpush "audit-#{room_data}" cmdstrformdata
           .bgsave!.exec!
         SC["#{room_data}"]?ExecuteCommand cmdstrformdata
         broadcast { room:"#{room_data}", user, type, auth, cmdstr: cmdstrformdata, +include_self }
-      # }eddy @on data 
+      # }eddy @on data
       SC[room]?ExecuteCommand cmdstr
       broadcast @data
     | \ask.log
       # eddy @on data {
       #ignore requests for log if startup up database
       if typeof DB.DB == 'undefined'
-        console.log "ignore connection request, no database yet!"      
+        console.log "ignore connection request, no database yet!"
         reply { type: \ignore }
         return
-      # } eddy @on data         
+      # } eddy @on data
       console.log "join [log-#{room}] [user-#user]"
       @socket.join "log-#room"
       @socket.join "user-#user"
@@ -549,8 +575,13 @@
         .lrange "log-#room" 0 -1
         .lrange "chat-#room" 0 -1
         .exec!
-      SC[room] = SC._init snapshot, log, DB, room, @io
-      reply { type: \log, room, log, chat, snapshot }
+      try
+        SC[room] = SC._init snapshot, log, DB, room, @io
+        reply { type: \log, room, log, chat, snapshot }
+      catch e
+        console.log "Calc [log-#{room}] is broken"
+        reply { type: \ignore }
+        reply { type: \fatalError, message: 'Calc is broken' }
     | \ask.recalc
       @socket.join "recalc.#room"
       SC[room]?terminate!

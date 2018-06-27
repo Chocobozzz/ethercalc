@@ -210,6 +210,12 @@ Check the activity stream to see the newly edited page!
         window.onunload = null
         window.onbeforeunload = null
         window.location = '/'
+      | \fatalError
+        vex?closeAll!
+        vex?defaultOptions.className = 'vex-theme-flat-attack'
+        vex?dialog.open do
+          message: @data.message
+        throw new Error(@data.message)
       | \error
         vex?closeAll!
         vex?defaultOptions.className = 'vex-theme-flat-attack'
