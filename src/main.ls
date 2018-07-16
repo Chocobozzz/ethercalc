@@ -229,13 +229,8 @@
         @response.type Text
         return @response.send 403 '_rooms not available with CORS'
   else
-<<<<<<< HEAD
      @get "#BASEPATH/_rooms" : ->
         rooms <~ SC._rooms
-=======
-     @get '/_rooms' : ->
-        rooms <~ SC._rooms
->>>>>>> Handle broken calcs
         @response.type \application/json
         @response.json 200 rooms
   if @CORS
@@ -243,13 +238,8 @@
         @response.type Text
         return @response.send 403 '_roomlinks not available with CORS'
   else
-<<<<<<< HEAD
      @get "#BASEPATH/_roomlinks" : ->
         rooms <~ SC._rooms
-=======
-     @get '/_roomlinks' : ->
-        rooms <~ SC._rooms
->>>>>>> Handle broken calcs
         roomlinks = for room in rooms
           "<a href=#BASEPATH/#room>#room</a>"
         @response.type Html
@@ -290,27 +280,16 @@
         sendFile(ui-file).call @
       else @response.redirect "#BASEPATH/#{ @params.room }?auth=0"
     else sendFile(ui-file).call @
-<<<<<<< HEAD
 
   # Form/App - auto duplicate sheet for new user to input data
   @get "#BASEPATH/:template/form": ->
-=======
-
-  # Form/App - auto duplicate sheet for new user to input data
-  @get '/:template/form': ->
->>>>>>> Handle broken calcs
     template = @params.template
     room = template + \_ + new-room!
     delete SC[room]
     {snapshot} <~ SC._get template, IO
     <~ SC._put room, snapshot
-<<<<<<< HEAD
     @response.redirect "#BASEPATH/#room/app"
   @get "#BASEPATH/:template/appeditor": sendFile \panels.html
-=======
-    @response.redirect "#BASEPATH/#room/app"
-  @get '/:template/appeditor': sendFile \panels.html
->>>>>>> Handle broken calcs
 
   @get "#BASEPATH/:room/edit": ->
     room = @params.room
@@ -375,14 +354,9 @@
       return cb save
 
   for route in <[
-<<<<<<< HEAD
     /=:room.xlsx /_/=:room/xlsx
     /=:room.ods /_/=:room/ods
     /=:room.fods /_/=:room/fods
-=======
-    /=:room.xlsx /_/=:room/xlsx
-    /=:room.ods /_/=:room/ods
->>>>>>> Handle broken calcs
   ]> => @put "#route": ->
     room = encodeURIComponent(@params.room).replace(/%3A/g \:)
     cs = []; @request.on \data (chunk) ~> cs ++= chunk
