@@ -176,8 +176,11 @@
       [harb, { Sheets: { Sheet1 } }] = J.read save
       input.0 ||= harb
       input.1.Sheets[names[idx]] = Sheet1
-    rv = J.utils["to_#type"](input)
-    [J-TypeMap[type], rv, type]
+    try
+      rv = J.utils["to_#type"](input)
+      [J-TypeMap[type], rv, type]
+    catch e
+      [J-TypeMap[type], e.message, type]
   )
 
   # Send time triggered email. Send due emails and schedule time of next send. Called from bash file:timetrigger in cron

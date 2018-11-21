@@ -237,7 +237,7 @@
         }
         return [JTypeMap[type], rv];
       }, function(names, saves){
-        var input, i$, len$, idx, save, ref$, harb, Sheet1, rv;
+        var input, i$, len$, idx, save, ref$, harb, Sheet1, rv, e;
         input = [
           null, {
             SheetNames: names,
@@ -251,8 +251,13 @@
           input[0] || (input[0] = harb);
           input[1].Sheets[names[idx]] = Sheet1;
         }
-        rv = J.utils["to_" + type](input);
-        return [JTypeMap[type], rv, type];
+        try {
+          rv = J.utils["to_" + type](input);
+          return [JTypeMap[type], rv, type];
+        } catch (e$) {
+          e = e$;
+          return [JTypeMap[type], e.message, type];
+        }
       });
     };
     this.get((ref$ = {}, ref$[BASEPATH + "/_timetrigger"] = function(){
