@@ -291,7 +291,7 @@
             DB.hset("cron-list", cellID, timeList.toString());
           }
         }
-        return DB.multi().set("cron-nextTriggerTime", nextTriggerTime).bgsave().exec(function(){
+        return DB.multi().set("cron-nextTriggerTime", nextTriggerTime).exec(function(){
           fs.writeFileSync(dataDir + "/nextTriggerTime.txt", nextTriggerTime, 'utf8');
           console.log("--- cron email sent ---");
           this$.response.type(Json);
@@ -598,7 +598,7 @@
                   if (matches) {
                     removeKey = matches[1];
                     backupKey = matches[1] + ".bak";
-                    return DB.multi().del("snapshot-" + backupKey).rename("snapshot-" + removeKey, "snapshot-" + backupKey).del("log-" + backupKey).rename("log-" + removeKey, "log-" + backupKey).del("audit-" + backupKey).rename("audit-" + removeKey, "audit-" + backupKey).bgsave().exec(function(_){});
+                    return DB.multi().del("snapshot-" + backupKey).rename("snapshot-" + removeKey, "snapshot-" + backupKey).del("log-" + backupKey).rename("log-" + removeKey, "log-" + backupKey).del("audit-" + backupKey).rename("audit-" + removeKey, "audit-" + backupKey).exec(function(_){});
                   }
                 }
               });
@@ -607,7 +607,7 @@
               command = [command];
             }
             cmdstr = join$.call(command, '\n');
-            return DB.multi().rpush("log-" + room, cmdstr).rpush("audit-" + room, cmdstr).bgsave().exec(function(){
+            return DB.multi().rpush("log-" + room, cmdstr).rpush("audit-" + room, cmdstr).exec(function(){
               var ref$;
               if ((ref$ = SC[room]) != null) {
                 ref$.ExecuteCommand(cmdstr);
@@ -740,7 +740,7 @@
           if (/^set sheet defaulttextvalueformat text-wiki\s*$/.exec(cmdstr)) {
             return;
           }
-          DB.multi().rpush("log-" + room, cmdstr).rpush("audit-" + room, cmdstr).bgsave().exec(function(){
+          DB.multi().rpush("log-" + room, cmdstr).rpush("audit-" + room, cmdstr).exec(function(){
             var commandParameters, room_data, ref$, ref1$;
             commandParameters = cmdstr.split("\r");
             if (SC[room] == null) {
@@ -777,7 +777,7 @@
                   formrow = res$;
                   cmdstrformdata = formrow.join("\n");
                   console.log("cmdstrformdata:" + cmdstrformdata);
-                  DB.multi().rpush("log-" + room_data, cmdstrformdata).rpush("audit-" + room_data, cmdstrformdata).bgsave().exec(function(){
+                  DB.multi().rpush("log-" + room_data, cmdstrformdata).rpush("audit-" + room_data, cmdstrformdata).exec(function(){
                     var ref$;
                     if ((ref$ = SC[room_data + ""]) != null) {
                       ref$.ExecuteCommand(cmdstrformdata);
@@ -912,7 +912,7 @@
           save = save.replace(RegExp('(\'?)\\b(' + res.join('|') + ')\\1!', 'g'), fn$);
           todo = todo.set("snapshot-" + room + "." + idx, save);
         }
-        todo.bgsave().exec();
+        todo.exec();
         return this$.response.send(201, 'OK');
         function fn$(arg$, arg1$, ref){
           return "'" + this$.params.room.replace(/'/g, "''") + "." + sheetsToIdx[ref.replace(/''/g, "'")] + "'!";

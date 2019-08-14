@@ -254,7 +254,7 @@
       if (!snapshot) {
         return typeof cb == 'function' ? cb() : void 8;
       }
-      return DB.multi().set("snapshot-" + room, snapshot).del(["log-" + room, "chat-" + room, "ecell-" + room, "audit-" + room]).bgsave().exec(function(){
+      return DB.multi().set("snapshot-" + room, snapshot).del(["log-" + room, "chat-" + room, "ecell-" + room, "audit-" + room]).exec(function(){
         if (EXPIRE) {
           DB.expire("snapshot-" + room, EXPIRE);
         }
@@ -263,7 +263,7 @@
     };
     SC._del = function(room, cb){
       var this$ = this;
-      return DB.multi().del(["snapshot-" + room, "log-" + room, "chat-" + room, "ecell-" + room, "audit-" + room]).bgsave().exec(function(){
+      return DB.multi().del(["snapshot-" + room, "log-" + room, "chat-" + room, "ecell-" + room, "audit-" + room]).exec(function(){
         return typeof cb == 'function' ? cb() : void 8;
       });
     };
@@ -440,7 +440,7 @@
           room: room
         });
         w._snapshot = newSnapshot;
-        return DB.multi().set("snapshot-" + room, newSnapshot).hset('timestamps', "timestamp-" + room, Date.now()).del("log-" + room).bgsave().exec(function(){
+        return DB.multi().set("snapshot-" + room, newSnapshot).hset('timestamps', "timestamp-" + room, Date.now()).del("log-" + room).exec(function(){
           if (EXPIRE) {
             return DB.expire("snapshot-" + room, EXPIRE);
           }
@@ -486,7 +486,7 @@
             if (triggerTimeList.length === 0) {
               return DB.hdel("cron-list", room + "!" + timetriggerdata.cell, function(){});
             } else {
-              return DB.multi().hset("cron-list", room + "!" + timetriggerdata.cell, triggerTimeList.toString()).set("cron-nextTriggerTime", nextTriggerTime).bgsave().exec(function(){
+              return DB.multi().hset("cron-list", room + "!" + timetriggerdata.cell, triggerTimeList.toString()).set("cron-nextTriggerTime", nextTriggerTime).exec(function(){
                 return DB.hgetall("cron-list", function(arg$, allTimeTriggers){
                   return console.log("allTimeTriggers", (import$({}, allTimeTriggers)), " nextTriggerTime " + nextTriggerTime);
                 });

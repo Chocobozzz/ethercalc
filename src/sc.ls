@@ -75,10 +75,10 @@ Worker ||= class => (code) ->
   EXPIRE = @EXPIRE
   emailer = @include \emailer
 
-  
+
   #eddy dataDir {
   dataDir = process.env.OPENSHIFT_DATA_DIR
-  #dataDir = ".."  
+  #dataDir = ".."
   # }
 
 
@@ -103,13 +103,13 @@ Worker ||= class => (code) ->
     <~ DB.multi!
       .set "snapshot-#room", snapshot
       .del ["log-#room" "chat-#room" "ecell-#room" "audit-#room"]
-      .bgsave!exec!
+      .exec!
     DB.expire "snapshot-#room", EXPIRE if EXPIRE
     cb?!
   SC._del = (room, cb) ->
     <~ DB.multi!
        .del ["snapshot-#room", "log-#room" "chat-#room" "ecell-#room" "audit-#room"]
-       .bgsave!exec!
+       .exec!
     cb?!
   SC._rooms = (cb) ->
     (, [rooms]) <~ DB.multi!
@@ -138,7 +138,7 @@ Worker ||= class => (code) ->
           postMessage { type: \setcrontrigger, timetriggerdata: { cell:commandParameters[1], times:commandParameters[2] } }
         if commandParameters[0] is \sendemail
           #console.log "------ send email --------"
-          #console.log " to:"+commandParameters[1]+" subject:"+commandParameters[2]+" body:"+commandParameters[3]             
+          #console.log " to:"+commandParameters[1]+" subject:"+commandParameters[2]+" body:"+commandParameters[3]
           postMessage { type: \sendemailout, emaildata: { to: commandParameters[1].replace(/%20/g,' '), subject: commandParameters[2].replace(/%20/g,' '), body:commandParameters[3].replace(/%20/g,' ')  } }
         window.ss.ExecuteCommand command
       | \recalc
@@ -206,9 +206,8 @@ Worker ||= class => (code) ->
         .set "snapshot-#room" newSnapshot
         .hset \timestamps "timestamp-#room" Date.now()
         .del "log-#room"
-        .bgsave!
         .exec!
-      #logdate = new Date() 
+      #logdate = new Date()
       #console.log "==> Regenerated snapshot #{logdate.getFullYear() }-#{(logdate.getMonth()) + 1 }-#{logdate.getDate()} #{logdate.getHours()}:#{logdate.getMinutes()}:#{logdate.getSeconds()} for #room"
       DB.expire "snapshot-#room", EXPIRE if EXPIRE
     w.onerror = -> console.log it
@@ -227,24 +226,24 @@ Worker ||= class => (code) ->
       console.log "timeNowMins #timeNowMins .dataDir #dataDir"
       nextTriggerTime ?= 2147483647   # set to max seconds possible (31^2)
       triggerTimeList = for nextTime in timetriggerdata.times.split(",") when nextTime >= timeNowMins
-        if nextTriggerTime > nextTime 
+        if nextTriggerTime > nextTime
           nextTriggerTime = nextTime
         nextTime
       if scheduledNextTriggerTime != nextTriggerTime
         fs.writeFileSync do
           "#dataDir/nextTriggerTime.txt"
           nextTriggerTime
-          \utf8               
-      if triggerTimeList.length == 0 
+          \utf8
+      if triggerTimeList.length == 0
         <~ DB.hdel "cron-list" "#{room}!#{timetriggerdata.cell}"
       else
         <~ DB.multi!
           .hset "cron-list" "#{room}!#{timetriggerdata.cell}" triggerTimeList.toString()
           .set "cron-nextTriggerTime" nextTriggerTime
-          .bgsave!exec!
+          .exec!
         (, allTimeTriggers) <~ DB.hgetall "cron-list"
         console.log "allTimeTriggers" {...allTimeTriggers} " nextTriggerTime #nextTriggerTime"
-    | \sendemailout 
+    | \sendemailout
       console.log "onmessage "+emaildata.to
       emailer?sendemail emaildata.to, emaildata.subject, emaildata.body,  (message) ->
         io.sockets.in "log-#room" .emit \data {
@@ -319,7 +318,7 @@ Worker ||= class => (code) ->
       x.thread.eval bootSC, -> x.post-message {snapshot: w._snapshot, log}
     w._eval = (code, cb) ->
       setTimeout do #delay to give server side sheet time to initialize
-        -> 
+        ->
           #console.log "EVAL un-threaded"
           (, rv) <- w.thread.eval code
           return cb rv if rv?
@@ -360,7 +359,7 @@ Worker ||= class => (code) ->
     """, (cell) -> if cell is \undefined then cb 'null' else cb cell
     w.exportCells = (cb) -> w._eval "JSON.stringify(window.ss.sheet.cells)", cb
     # eddy exportAttribs, triggerActionCell {
-    w.exportAttribs = (cb) -> w._eval "window.ss.sheet.attribs", cb    
+    w.exportAttribs = (cb) -> w._eval "window.ss.sheet.attribs", cb
     w.triggerActionCell = (coord, cb) -> w._eval "window.ss.SocialCalc.TriggerIoAction.Email('#coord')" (emailcmd) ->
       #console.log "send via OAuth"
       for nextEmail in emailcmd
