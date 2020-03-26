@@ -1,4 +1,6 @@
 @include = ->
+  argv = (try require \optimist .boolean <[ vm ]> .argv) || {}
+
   @use \json, @app.router, @express.static __dirname
   @app.use \/edit @express.static __dirname
   @app.use \/view @express.static __dirname
@@ -13,7 +15,13 @@
   csv-parse = require \csv-parse
 
   DB = @include \db
-  SC = @include \sc
+
+  if argv.vm
+    console.log('Using VM implementation')
+    SC = @include \sc
+  else
+    console.log('Using threads implementation')
+    SC = @include \sc_threads
 
   KEY = @KEY
   BASEPATH = @BASEPATH
